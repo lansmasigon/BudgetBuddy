@@ -69,6 +69,8 @@ class _AddTransactionDialogState extends ConsumerState<AddTransactionDialog> {
               items: const [
                 DropdownMenuItem(value: 'Cash', child: Text('Cash')),
                 DropdownMenuItem(value: 'GCash', child: Text('GCash')),
+                DropdownMenuItem(value: 'Maya', child: Text('Maya')),
+                DropdownMenuItem(value: 'Bank', child: Text('Bank')),
               ],
               onChanged: (val) {
                 if (val != null) setState(() => selectedWallet = val);

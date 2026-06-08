@@ -4,12 +4,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../dashboard/presentation/providers/dashboard_provider.dart';
 
+class TransactionFilterNotifier extends Notifier<String> {
+  @override
+  String build() => 'All';
+  void setFilter(String filter) => state = filter;
+}
+
+final transactionFilterProvider = NotifierProvider<TransactionFilterNotifier, String>(() => TransactionFilterNotifier());
+
 class TransactionsPage extends ConsumerWidget {
   const TransactionsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardAsync = ref.watch(dashboardDataProvider);
+    final filter = ref.watch(transactionFilterProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
@@ -19,11 +28,20 @@ class TransactionsPage extends ConsumerWidget {
           error: (e, s) => Center(child: Text('Error: $e')),
           data: (data) {
             if (data == null) return const Center(child: CircularProgressIndicator());
-            final transactions = data['transactions'] as List<dynamic>;
+            List<dynamic> transactions = data['transactions'] as List<dynamic>;
+
+            // Filter the list
+            if (filter == 'Income') {
+              transactions = transactions.where((tx) => tx['type'] == 'income').toList();
+            } else if (filter == 'Expense') {
+              transactions = transactions.where((tx) => tx['type'] == 'expense').toList();
+            } else if (filter == 'Transfer') {
+              transactions = transactions.where((tx) => tx['type'] == 'transfer').toList();
+            }
 
             double totalIncome = 0;
             double totalExpense = 0;
-            for (var tx in transactions) {
+            for (var tx in data['transactions']) {
               if (tx['type'] == 'income') totalIncome += tx['amount'];
               if (tx['type'] == 'expense') totalExpense += tx['amount'];
             }
@@ -34,7 +52,7 @@ class TransactionsPage extends ConsumerWidget {
                 children: [
                   _buildHeader(),
                   _buildSummaryCards(totalIncome, totalExpense),
-                  _buildFilterTabs(),
+                  _buildFilterTabs(ref, filter),
                   _buildDateLabel('RECENT'),
                   _buildTransactionsList(transactions),
                 ],
@@ -120,33 +138,37 @@ class TransactionsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildFilterTabs() {
+  Widget _buildFilterTabs(WidgetRef ref, String currentFilter) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       child: Row(
         children: [
-          _buildTab('All', true),
-          _buildTab('Income', false),
-          _buildTab('Expense', false),
-          _buildTab('Transfer', false),
+          _buildTab(ref, currentFilter, 'All'),
+          _buildTab(ref, currentFilter, 'Income'),
+          _buildTab(ref, currentFilter, 'Expense'),
+          _buildTab(ref, currentFilter, 'Transfer'),
         ],
       ),
     );
   }
 
-  Widget _buildTab(String label, bool isActive) {
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: BoxDecoration(
-        color: isActive ? AppTheme.em : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isActive ? AppTheme.em : const Color(0x1E10B981)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isActive ? Colors.white : AppTheme.textMuted),
+  Widget _buildTab(WidgetRef ref, String currentFilter, String label) {
+    final isActive = currentFilter == label;
+    return GestureDetector(
+      onTap: () => ref.read(transactionFilterProvider.notifier).setFilter(label),
+      child: Container(
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        decoration: BoxDecoration(
+          color: isActive ? AppTheme.em : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: isActive ? AppTheme.em : const Color(0x1E10B981)),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: isActive ? Colors.white : AppTheme.textMuted),
+        ),
       ),
     );
   }

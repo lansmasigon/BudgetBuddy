@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../dashboard/presentation/providers/dashboard_provider.dart';
+import '../widgets/add_goal_dialog.dart';
 
 class GoalsPage extends ConsumerWidget {
   const GoalsPage({super.key});
@@ -19,17 +20,24 @@ class GoalsPage extends ConsumerWidget {
           error: (e, s) => Center(child: Text('Error: $e')),
           data: (data) {
             if (data == null) return const Center(child: CircularProgressIndicator());
-            // Normally Goals are fetched from data['goals'], but we don't have them in dashboard API yet
-            // Let's mock the display using some dynamic calculation if possible or just remove static placeholders
+            
+            final goals = (data['goals'] as List<dynamic>?) ?? [];
+            final wallets = (data['wallets'] as List<dynamic>?) ?? [];
+            double totalSaved = 0;
+            double totalTarget = 0;
+            for (var goal in goals) {
+              totalSaved += (goal['currentAmount'] ?? 0);
+              totalTarget += (goal['targetAmount'] ?? 0);
+            }
             
             return SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildHeader(),
-                  _buildTotalSavedCard(0, 100000), // mock for MVP
+                  _buildHeader(context),
+                  _buildTotalSavedCard(totalSaved, totalTarget),
                   _buildSectionTitle('Active Goals'),
-                  _buildGoalCards(),
+                  _buildGoalCards(context, goals, wallets),
                 ],
               ),
             );
@@ -39,7 +47,7 @@ class GoalsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 10, 18, 14),
       child: Row(
@@ -49,13 +57,21 @@ class GoalsPage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Savings Goals', style: GoogleFonts.dmSerifDisplay(fontSize: 24, color: AppTheme.textDark)),
-              const Text('3 active goals', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+              const Text('Active goals', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
             ],
           ),
-          const CircleAvatar(
-            backgroundColor: AppTheme.emXlt,
-            radius: 16,
-            child: Icon(Icons.add, size: 18, color: AppTheme.emDk),
+          GestureDetector(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => const AddGoalDialog(),
+              );
+            },
+            child: const CircleAvatar(
+              backgroundColor: AppTheme.emXlt,
+              radius: 16,
+              child: Icon(Icons.add, size: 18, color: AppTheme.emDk),
+            ),
           ),
         ],
       ),
@@ -98,13 +114,66 @@ class GoalsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildGoalCards() {
+  Widget _buildGoalCards(BuildContext context, List<dynamic> goals, List<dynamic> wallets) {
+    if (goals.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 14),
+        child: Text("No goals set yet. Click the + icon to add one!", style: TextStyle(color: AppTheme.textMuted)),
+      );
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14),
       child: Column(
-        children: [
-          _buildGoalCard('Emergency Fund', 'Linked: BDO Bank', Icons.shield, '₱0', '₱50,000', 0, 'Dec 2025', '₱50,000 remaining', AppTheme.em, AppTheme.emXlt, AppTheme.emDk),
-        ],
+        children: goals.map((g) {
+          final target = (g['targetAmount'] as num).toDouble();
+          final current = (g['currentAmount'] as num).toDouble();
+          final progress = target == 0 ? 0.0 : current / target;
+          final remaining = target - current;
+
+          // Find linked wallet name
+          String linkedWalletName = "Unlinked";
+          if (g['linkedWalletId'] != null) {
+            final wMatch = wallets.firstWhere(
+              (w) => w['_id'] == g['linkedWalletId'], 
+              orElse: () => null
+            );
+            if (wMatch != null) linkedWalletName = wMatch['name'];
+          }
+
+          return GestureDetector(
+            onTap: () {
+              // MVP Modal to select a wallet link
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => Container(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Link Wallet to Goal', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 16),
+                      ListTile(title: const Text('Cash'), onTap: () => Navigator.pop(context)),
+                      ListTile(title: const Text('GCash'), onTap: () => Navigator.pop(context)),
+                      ListTile(title: const Text('Maya'), onTap: () => Navigator.pop(context)),
+                      ListTile(title: const Text('Bank'), onTap: () => Navigator.pop(context)),
+                    ],
+                  ),
+                ),
+              );
+            },
+            child: _buildGoalCard(
+              g['name'], 
+              'Linked: $linkedWalletName', 
+              Icons.flag, 
+              '₱${current.toStringAsFixed(0)}', 
+              '₱${target.toStringAsFixed(0)}', 
+              progress, 
+              g['targetDate'] ?? 'No Date', 
+              '₱${remaining.toStringAsFixed(0)} remaining', 
+              AppTheme.em, AppTheme.emXlt, AppTheme.emDk
+            ),
+          );
+        }).toList(),
       ),
     );
   }
