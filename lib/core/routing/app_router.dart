@@ -11,20 +11,25 @@ import '../../features/auth/presentation/pages/profile_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/onboarding_page.dart';
+import '../../features/auth/presentation/pages/landing_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: '/login',
+  initialLocation: '/landing',
   routes: [
     GoRoute(
+      path: '/landing',
+      builder: (context, state) => const LandingScreen(),
+    ),
+    GoRoute(
       path: '/login',
-      builder: (context, state) => const LoginPage(),
+      builder: (context, state) => const LoginScreen(),
     ),
     GoRoute(
       path: '/register',
-      builder: (context, state) => const RegisterPage(),
+      builder: (context, state) => const RegisterScreen(),
     ),
     GoRoute(
       path: '/onboarding',
