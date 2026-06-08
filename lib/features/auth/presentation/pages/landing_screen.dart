@@ -112,6 +112,7 @@ class _LandingScreenState extends State<LandingScreen>
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          const Spacer(),
           TextButton(
             onPressed: () => Navigator.push(
               context,
@@ -125,15 +126,6 @@ class _LandingScreenState extends State<LandingScreen>
                 color: AppColors.emerald600,
               ),
             ),
-          ),
-          const SizedBox(width: 8),
-          _PrimaryButton(
-            label: 'Get Started',
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const RegisterScreen()),
-            ),
-            compact: true,
           ),
         ],
       ),
@@ -486,26 +478,6 @@ class _LandingScreenState extends State<LandingScreen>
           const SizedBox(height: 20),
           Row(
             children: [
-              Container(
-                width: 28,
-                height: 28,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.emerald500, AppColors.emerald700],
-                  ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.savings_outlined,
-                    color: Colors.white, size: 14),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'BudgetBuddy',
-                style: GoogleFonts.dmSerifDisplay(
-                  fontSize: 15,
-                  color: isDark ? Colors.white : AppColors.gray900,
-                ),
-              ),
               const Spacer(),
               Text(
                 '© 2025',

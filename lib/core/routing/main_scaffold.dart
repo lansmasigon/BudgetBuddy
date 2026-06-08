@@ -25,8 +25,8 @@ class MainScaffold extends StatelessWidget {
         },
         backgroundColor: AppTheme.em,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-        child: const Icon(Icons.add, color: Colors.white),
+        shape: const CircleBorder(),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
@@ -34,15 +34,18 @@ class MainScaffold extends StatelessWidget {
         shape: const CircularNotchedRectangle(),
         notchMargin: 8.0,
         elevation: 10,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(0, Icons.home_outlined, Icons.home, 'Home'),
-            _buildNavItem(1, Icons.swap_horiz_outlined, Icons.swap_horiz, 'Transactions'),
-            const SizedBox(width: 48), // Space for FAB
-            _buildNavItem(2, Icons.pie_chart_outline, Icons.pie_chart, 'Analytics'),
-            _buildNavItem(3, Icons.track_changes, Icons.track_changes, 'Goals'),
-          ],
+        child: SizedBox(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildNavItem(0, Icons.home_outlined, Icons.home, 'Home'),
+              _buildNavItem(1, Icons.swap_horiz_outlined, Icons.swap_horiz, 'Transactions'),
+              const SizedBox(width: 40), // Space for FAB
+              _buildNavItem(2, Icons.pie_chart_outline, Icons.pie_chart, 'Analytics'),
+              _buildNavItem(3, Icons.track_changes_outlined, Icons.track_changes, 'Goals'),
+            ],
+          ),
         ),
       ),
     );
@@ -50,29 +53,35 @@ class MainScaffold extends StatelessWidget {
 
   Widget _buildNavItem(int index, IconData outlineIcon, IconData solidIcon, String label) {
     final isSelected = navigationShell.currentIndex == index;
-    return GestureDetector(
-      onTap: () {
-        navigationShell.goBranch(
-          index,
-          initialLocation: index == navigationShell.currentIndex,
-        );
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isSelected ? solidIcon : outlineIcon,
-            color: isSelected ? AppTheme.emDk : AppTheme.textMuted,
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          navigationShell.goBranch(
+            index,
+            initialLocation: index == navigationShell.currentIndex,
+          );
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isSelected ? solidIcon : outlineIcon,
               color: isSelected ? AppTheme.emDk : AppTheme.textMuted,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              size: 24,
             ),
-          )
-        ],
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                color: isSelected ? AppTheme.emDk : AppTheme.textMuted,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            )
+          ],
+        ),
       ),
     );
   }

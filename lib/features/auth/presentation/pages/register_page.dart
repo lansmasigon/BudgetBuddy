@@ -128,8 +128,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                     const SizedBox(height: 32),
                     _buildHeader(isDark),
                     const SizedBox(height: 32),
-                    _buildStepIndicator(),
-                    const SizedBox(height: 28),
                     _buildNameField(isDark),
                     const SizedBox(height: 16),
                     _buildEmailField(isDark),
