@@ -18,6 +18,8 @@ class _AddGoalDialogState extends ConsumerState<AddGoalDialog> {
   final nameController = TextEditingController();
   final amountController = TextEditingController();
   final dateController = TextEditingController();
+  String selectedWallet = 'Cash'; // Assuming Cash exists for MVP
+
   bool isLoading = false;
 
   @override
@@ -47,6 +49,20 @@ class _AddGoalDialogState extends ConsumerState<AddGoalDialog> {
               controller: dateController,
               decoration: const InputDecoration(labelText: 'Target Date (e.g. Dec 2025)', border: OutlineInputBorder()),
             ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: selectedWallet,
+              decoration: const InputDecoration(labelText: 'Link Wallet', border: OutlineInputBorder()),
+              items: const [
+                DropdownMenuItem(value: 'Cash', child: Text('Cash')),
+                DropdownMenuItem(value: 'GCash', child: Text('GCash')),
+                DropdownMenuItem(value: 'Maya', child: Text('Maya')),
+                DropdownMenuItem(value: 'Bank', child: Text('Bank')),
+              ],
+              onChanged: (val) {
+                if (val != null) setState(() => selectedWallet = val);
+              },
+            ),
             const SizedBox(height: 24),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -71,6 +87,7 @@ class _AddGoalDialogState extends ConsumerState<AddGoalDialog> {
                         'name': nameController.text,
                         'targetAmount': amount,
                         'targetDate': dateController.text,
+                        'linkedWallet': selectedWallet, // Send wallet name to lookup ID in backend
                       }),
                     );
                     

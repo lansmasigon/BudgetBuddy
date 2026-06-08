@@ -142,35 +142,55 @@ class GoalsPage extends ConsumerWidget {
 
           return GestureDetector(
             onTap: () {
-              // MVP Modal to select a wallet link
-              showModalBottomSheet(
-                context: context,
-                builder: (context) => Container(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('Link Wallet to Goal', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 16),
-                      ListTile(title: const Text('Cash'), onTap: () => Navigator.pop(context)),
-                      ListTile(title: const Text('GCash'), onTap: () => Navigator.pop(context)),
-                      ListTile(title: const Text('Maya'), onTap: () => Navigator.pop(context)),
-                      ListTile(title: const Text('Bank'), onTap: () => Navigator.pop(context)),
+              if (progress >= 1.0) {
+                // If completed, allow removal (UI only for MVP)
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Goal Completed!'),
+                    content: const Text('Do you want to remove this completed goal?'),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                      TextButton(onPressed: () {
+                        // TODO: Call Convex to delete goal
+                        Navigator.pop(context);
+                      }, child: const Text('Remove')),
                     ],
                   ),
-                ),
-              );
+                );
+              } else {
+                // MVP Modal to select a wallet link
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) => Container(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('Link Wallet to Goal', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 16),
+                        ListTile(title: const Text('Cash'), onTap: () => Navigator.pop(context)),
+                        ListTile(title: const Text('GCash'), onTap: () => Navigator.pop(context)),
+                        ListTile(title: const Text('Maya'), onTap: () => Navigator.pop(context)),
+                        ListTile(title: const Text('Bank'), onTap: () => Navigator.pop(context)),
+                      ],
+                    ),
+                  ),
+                );
+              }
             },
             child: _buildGoalCard(
               g['name'], 
               'Linked: $linkedWalletName', 
-              Icons.flag, 
+              progress >= 1.0 ? Icons.check_circle : Icons.flag, 
               '₱${current.toStringAsFixed(0)}', 
               '₱${target.toStringAsFixed(0)}', 
-              progress, 
-              g['targetDate'] ?? 'No Date', 
-              '₱${remaining.toStringAsFixed(0)} remaining', 
-              AppTheme.em, AppTheme.emXlt, AppTheme.emDk
+              progress > 1.0 ? 1.0 : progress, 
+              progress >= 1.0 ? 'Completed' : (g['targetDate'] ?? 'No Date'), 
+              progress >= 1.0 ? 'Fully Funded!' : '₱${remaining.toStringAsFixed(0)} remaining', 
+              progress >= 1.0 ? AppTheme.amber : AppTheme.em, 
+              progress >= 1.0 ? const Color(0xFFFEF3C7) : AppTheme.emXlt, 
+              progress >= 1.0 ? AppTheme.amber : AppTheme.emDk
             ),
           );
         }).toList(),

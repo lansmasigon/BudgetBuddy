@@ -11,13 +11,27 @@ class AddTransactionDialog extends ConsumerStatefulWidget {
 }
 
 class _AddTransactionDialogState extends ConsumerState<AddTransactionDialog> {
-  bool isIncome = false;
+  String selectedType = 'expense';
   final TextEditingController amountController = TextEditingController();
-  final TextEditingController descriptionController = TextEditingController();
+  String? selectedCategory;
   String selectedWallet = 'Cash';
+  String transferFromWallet = 'Cash';
+  String transferToWallet = 'GCash';
+
+  final List<String> categories = [
+    'Food',
+    'Transportation',
+    'Electricity',
+    'Water',
+    'Internet',
+    'Salary',
+    'General',
+  ];
 
   @override
   Widget build(BuildContext context) {
+    final isTransfer = selectedType == 'transfer';
+    
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
@@ -28,28 +42,32 @@ class _AddTransactionDialogState extends ConsumerState<AddTransactionDialog> {
           children: [
             const Text('Add Transaction', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: ChoiceChip(
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  ChoiceChip(
                     label: const Text('Expense'),
-                    selected: !isIncome,
-                    onSelected: (val) => setState(() => isIncome = false),
+                    selected: selectedType == 'expense',
+                    onSelected: (val) => setState(() => selectedType = 'expense'),
                     selectedColor: AppTheme.red.withOpacity(0.2),
-                    labelStyle: TextStyle(color: !isIncome ? AppTheme.red : Colors.black),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ChoiceChip(
+                  const SizedBox(width: 8),
+                  ChoiceChip(
                     label: const Text('Income'),
-                    selected: isIncome,
-                    onSelected: (val) => setState(() => isIncome = true),
+                    selected: selectedType == 'income',
+                    onSelected: (val) => setState(() => selectedType = 'income'),
                     selectedColor: AppTheme.emLt,
-                    labelStyle: TextStyle(color: isIncome ? AppTheme.emDk : Colors.black),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  ChoiceChip(
+                    label: const Text('Transfer'),
+                    selected: isTransfer,
+                    onSelected: (val) => setState(() => selectedType = 'transfer'),
+                    selectedColor: Colors.blue.withOpacity(0.2),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -58,24 +76,58 @@ class _AddTransactionDialogState extends ConsumerState<AddTransactionDialog> {
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: descriptionController,
-              decoration: const InputDecoration(labelText: 'Description (e.g. Lunch)', border: OutlineInputBorder()),
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: selectedWallet,
-              decoration: const InputDecoration(labelText: 'Wallet', border: OutlineInputBorder()),
-              items: const [
-                DropdownMenuItem(value: 'Cash', child: Text('Cash')),
-                DropdownMenuItem(value: 'GCash', child: Text('GCash')),
-                DropdownMenuItem(value: 'Maya', child: Text('Maya')),
-                DropdownMenuItem(value: 'Bank', child: Text('Bank')),
-              ],
-              onChanged: (val) {
-                if (val != null) setState(() => selectedWallet = val);
-              },
-            ),
+            if (!isTransfer) ...[
+              DropdownButtonFormField<String>(
+                value: selectedCategory,
+                decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
+                items: categories.map((cat) => DropdownMenuItem(value: cat, child: Text(cat))).toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => selectedCategory = val);
+                },
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: selectedWallet,
+                decoration: const InputDecoration(labelText: 'Wallet', border: OutlineInputBorder()),
+                items: const [
+                  DropdownMenuItem(value: 'Cash', child: Text('Cash')),
+                  DropdownMenuItem(value: 'GCash', child: Text('GCash')),
+                  DropdownMenuItem(value: 'Maya', child: Text('Maya')),
+                  DropdownMenuItem(value: 'Bank', child: Text('Bank')),
+                ],
+                onChanged: (val) {
+                  if (val != null) setState(() => selectedWallet = val);
+                },
+              ),
+            ] else ...[
+              DropdownButtonFormField<String>(
+                value: transferFromWallet,
+                decoration: const InputDecoration(labelText: 'Transfer From', border: OutlineInputBorder()),
+                items: const [
+                  DropdownMenuItem(value: 'Cash', child: Text('Cash')),
+                  DropdownMenuItem(value: 'GCash', child: Text('GCash')),
+                  DropdownMenuItem(value: 'Maya', child: Text('Maya')),
+                  DropdownMenuItem(value: 'Bank', child: Text('Bank')),
+                ],
+                onChanged: (val) {
+                  if (val != null) setState(() => transferFromWallet = val);
+                },
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                value: transferToWallet,
+                decoration: const InputDecoration(labelText: 'Transfer To', border: OutlineInputBorder()),
+                items: const [
+                  DropdownMenuItem(value: 'Cash', child: Text('Cash')),
+                  DropdownMenuItem(value: 'GCash', child: Text('GCash')),
+                  DropdownMenuItem(value: 'Maya', child: Text('Maya')),
+                  DropdownMenuItem(value: 'Bank', child: Text('Bank')),
+                ],
+                onChanged: (val) {
+                  if (val != null) setState(() => transferToWallet = val);
+                },
+              ),
+            ],
             const SizedBox(height: 24),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -85,20 +137,27 @@ class _AddTransactionDialogState extends ConsumerState<AddTransactionDialog> {
               ),
               onPressed: () async {
                 final double? amount = double.tryParse(amountController.text);
-                if (amount != null && descriptionController.text.isNotEmpty) {
-                  // For MVP we just use the name as ID (backend doesn't validate strictly here or we need to look it up)
-                  // In a full implementation, the Dropdown should hold the actual Wallet _id from Convex
-                  final success = await ref.read(transactionsProvider.notifier).addTransaction(
-                    selectedWallet, // Ideally actual _id from convex
-                    isIncome ? 'income' : 'expense',
-                    amount,
-                    isIncome ? 'Income' : 'General',
-                    descriptionController.text,
-                  );
-                  if (success) {
-                    if (context.mounted) Navigator.pop(context);
-                    if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Transaction added!')));
+                if (amount != null) {
+                  if (isTransfer) {
+                    // MVP Transfer: Withdraw from one, deposit to another
+                    await ref.read(transactionsProvider.notifier).addTransaction(
+                      transferFromWallet, 'expense', amount, 'Transfer', 'To $transferToWallet',
+                    );
+                    await ref.read(transactionsProvider.notifier).addTransaction(
+                      transferToWallet, 'income', amount, 'Transfer', 'From $transferFromWallet',
+                    );
+                  } else {
+                    if (selectedCategory == null) return;
+                    await ref.read(transactionsProvider.notifier).addTransaction(
+                      selectedWallet,
+                      selectedType,
+                      amount,
+                      selectedCategory!,
+                      selectedCategory!, // Use category as description for now
+                    );
                   }
+                  if (context.mounted) Navigator.pop(context);
+                  if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Transaction added!')));
                 }
               },
               child: const Text('Save Transaction'),
