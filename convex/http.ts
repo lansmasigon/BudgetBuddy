@@ -136,4 +136,31 @@ http.route({
   }),
 });
 
+http.route({
+  path: "/api/addGoal",
+  method: "OPTIONS",
+  handler: httpAction(async (_, request) => {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }),
+});
+
+http.route({
+  path: "/api/addGoal",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const args = await request.json();
+      const goalId = await ctx.runMutation(api.goals.addGoal, args);
+      return new Response(JSON.stringify({ goalId }), {
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
+  }),
+});
+
 export default http;

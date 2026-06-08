@@ -24,6 +24,8 @@ export const createUser = mutation({
     // Create default wallets for new user
     await ctx.db.insert("wallets", { userId: newUserId, name: "Cash", type: "cash", balance: 0 });
     await ctx.db.insert("wallets", { userId: newUserId, name: "GCash", type: "ewallet", balance: 0 });
+    await ctx.db.insert("wallets", { userId: newUserId, name: "Maya", type: "ewallet", balance: 0 });
+    await ctx.db.insert("wallets", { userId: newUserId, name: "Bank", type: "bank", balance: 0 });
 
     return newUserId;
   },

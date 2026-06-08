@@ -21,10 +21,17 @@ export const getDashboardData = query({
       .order("desc")
       .take(10);
 
+    // Fetch Goals
+    const goals = await ctx.db
+      .query("goals")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+
     return {
       user: { name: user.name, email: user.email },
       wallets: wallets,
       transactions: transactions,
+      goals: goals,
     };
   },
 });
