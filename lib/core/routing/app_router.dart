@@ -5,6 +5,7 @@ import 'main_scaffold.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/transaction/presentation/pages/transactions_page.dart';
 import '../../features/budget/presentation/pages/budget_page.dart';
+import '../../features/budget/presentation/pages/grocery_planner_page.dart';
 import '../../features/goal/presentation/pages/goals_page.dart';
 import '../../features/auth/presentation/pages/profile_page.dart';
 
@@ -77,6 +78,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/profile',
       builder: (context, state) => const ProfilePage(),
+    ),
+    GoRoute(
+      path: '/grocery',
+      builder: (context, state) => const GroceryPlannerPage(),
     ),
   ],
 );
