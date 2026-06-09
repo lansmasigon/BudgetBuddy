@@ -57,6 +57,8 @@ class DashboardPage extends ConsumerWidget {
                   _buildBalanceCard(totalBalance, totalIncome, totalExpense),
                   _buildSectionTitle('My Wallets', 'See all'),
                   _buildWallets(wallets),
+                  _buildSectionTitle('Features', ''),
+                  _buildFeatureCard(context),
                   _buildSectionTitle('Recent Transactions', 'See all'),
                   _buildTransactions(transactions),
                 ],
@@ -170,8 +172,47 @@ class DashboardPage extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.textDark)),
-          Text(action, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppTheme.emDk)),
+          if (action.isNotEmpty) Text(action, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppTheme.emDk)),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureCard(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push('/grocery'),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0x1E10B981)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppTheme.emLt,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.shopping_cart_outlined, color: AppTheme.emDk, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Smart Grocery Planner', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.textDark)),
+                  const SizedBox(height: 2),
+                  const Text('Generate lists matching your budget', style: TextStyle(fontSize: 11, color: AppTheme.textMuted)),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.textMuted),
+          ],
+        ),
       ),
     );
   }
